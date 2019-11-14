@@ -157,12 +157,12 @@ SUBROUTINE rgn (objFunc, p, n, x0, xLo, xHi, cnv, x, info, error, message, decFi
       END SUBROUTINE objFunc
    END INTERFACE
    
-   interface
-      subroutine print_c(string) bind(C, name="print_C")
-         use iso_c_binding, only: c_char
-         character(kind=c_char) :: string(*)
-      end subroutine print_c
-   end interface
+   ! interface
+   !    subroutine print_c(string) bind(C, name="print_C")
+   !       use iso_c_binding, only: c_char
+   !       character(kind=c_char) :: string(*)
+   !    end subroutine print_c
+   ! end interface
    ! call print_c(C_CHAR_"Hello World"//C_NULL_CHAR)
 
    INTEGER(ik) :: nIter, i, j, k, m, nrls, nf, iMax, nr, termCode, noReduction, noRelChangeF, noRelChangePar
