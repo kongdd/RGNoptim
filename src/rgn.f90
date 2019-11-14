@@ -39,6 +39,9 @@
 
 MODULE rgnMod
    USE constantsMod, ONLY : ik, rk
+   use iso_c_binding
+   ! use iso_c_binding, only: C_CHAR, C_NULL_CHAR
+
    IMPLICIT NONE
    PRIVATE 
    PUBLIC :: setDefaultRgnConvergeSettings, rgnConvType, rgn, rgnInfoType
@@ -70,7 +73,7 @@ MODULE rgnMod
 CONTAINS
 !
 ! Initialize the RGN converge variables 
-SUBROUTINE setDefaultRgnConvergeSettings (cnvSet, iterMax, dump, logFile, fail)
+SUBROUTINE setDefaultRgnConvergeSettings (cnvSet, iterMax, dump, logFile, fail) !bind(c, name="setDefaultRgnConvergeSettings")
    TYPE (rgnConvType), INTENT(inout)  :: cnvSet
    INTEGER(ik), INTENT(in), OPTIONAL  :: iterMax, fail
    INTEGER(ik), OPTIONAL              :: dump
@@ -88,7 +91,7 @@ SUBROUTINE setDefaultRgnConvergeSettings (cnvSet, iterMax, dump, logFile, fail)
       
       cnvSet%noRelChangeParTol = 1.0e-5_rk
       cnvSet%noRelChangePar = 5
-	  cnvSet%tolSafe = 1.0e-14_rk
+      cnvSet%tolSafe = 1.0e-14_rk
       
       cnvSet%dumpResults = 0; IF (PRESENT(dump)) cnvSet%dumpResults = dump
       
@@ -137,8 +140,9 @@ SUBROUTINE rgn (objFunc, p, n, x0, xLo, xHi, cnv, x, info, error, message, decFi
    INTEGER(ik), INTENT(inout)         :: error    ! error code 0= ok
    CHARACTER(*),INTENT(inout)         :: message  ! error message
    CHARACTER(*), INTENT(in), OPTIONAL :: decFile  ! dumpfile name
+
    INTERFACE
-      SUBROUTINE objFunc (nPar, nSim, x, r, f, timeFunc, error, message)
+      SUBROUTINE objFunc (nPar, nSim, x, r, f, timeFunc, error, message) !bind(c, name="objFunc_")
          USE constantsMod, ONLY: ik, rk
          IMPLICIT NONE
          INTEGER(ik), INTENT(in) :: nPar
@@ -149,10 +153,18 @@ SUBROUTINE rgn (objFunc, p, n, x0, xLo, xHi, cnv, x, info, error, message, decFi
          REAL(rk),INTENT(out):: timeFunc   
          INTEGER(ik), INTENT(inout):: error
          CHARACTER(100),INTENT(inout) :: message
-   INTEGER(ik)::status
+         INTEGER(ik)::status
       END SUBROUTINE objFunc
    END INTERFACE
    
+   interface
+      subroutine print_c(string) bind(C, name="print_C")
+         use iso_c_binding, only: c_char
+         character(kind=c_char) :: string(*)
+      end subroutine print_c
+   end interface
+   ! call print_c(C_CHAR_"Hello World"//C_NULL_CHAR)
+
    INTEGER(ik) :: nIter, i, j, k, m, nrls, nf, iMax, nr, termCode, noReduction, noRelChangeF, noRelChangePar
    INTEGER(ik), ALLOCATABLE :: as(:)
    
@@ -438,10 +450,10 @@ SUBROUTINE rgn (objFunc, p, n, x0, xLo, xHi, cnv, x, info, error, message, decFi
    !
    ! Store the value of best objective function for termination check
          fOptSeries(nIter) = fBest      
-  !
+   ! 
    ! Update sampling scale
          IF (flag_ls) THEN
-!         IF (flag_ls .and. .not.(noReduction > cnv%fail .or. noRelChangeF > cnv%fail .or. noRelChangePar > cnv%fail)) THEN  !GAK enhance
+         ! IF (flag_ls .and. .not.(noReduction > cnv%fail .or. noRelChangeF > cnv%fail .or. noRelChangePar > cnv%fail)) THEN  !GAK enhance
             h = MIN (set%beta*h, hHi)
          ELSE
             h = MAX (h/set%beta, hLo)
@@ -463,7 +475,7 @@ SUBROUTINE rgn (objFunc, p, n, x0, xLo, xHi, cnv, x, info, error, message, decFi
               info%termFlag = 2; EXIT
             ENDIF
             
-			   noReduction = MERGE (noReduction+1_ik, 0_ik, f >= fOldBest)
+            noReduction = MERGE (noReduction+1_ik, 0_ik, f >= fOldBest)
             IF (noReduction >= cnv%noReduction) THEN
                info%termFlag = 3; EXIT
             END IF
@@ -498,29 +510,29 @@ SUBROUTINE rgn (objFunc, p, n, x0, xLo, xHi, cnv, x, info, error, message, decFi
    !
    ! Error states
 1    error = 1; message = "f-"//procnam//"RGN objFunc call failed"
-CONTAINS
+   CONTAINS
 
-SUBROUTINE updateBest (f, x, r)
-   REAL(rk), INTENT(in) :: x(:), r(:), f
-   !---
-   !
-      IF (f < fBest) THEN
-         fBest = f
-         xBest = x
-         rBest = r
-      END IF
-END SUBROUTINE updateBest
+   SUBROUTINE updateBest (f, x, r)
+      REAL(rk), INTENT(in) :: x(:), r(:), f
+      !---
+      !
+         IF (f < fBest) THEN
+            fBest = f
+            xBest = x
+            rBest = r
+         END IF
+   END SUBROUTINE updateBest
 
-SUBROUTINE updateHess (Hess, k)
-   USE constantsMod,ONLY:zero
-   REAL(rk), INTENT(inout) :: Hess(:,:)
-   INTEGER(ik),INTENT(in)::k
-   !---
-   REAL(rk)::diagK
-   diagK=Hess(k,k)
-   Hess(k,:)=zero; Hess(:,k)=zero
-   Hess(k,k)=diagK
-END SUBROUTINE updateHess
+   SUBROUTINE updateHess (Hess, k)
+      USE constantsMod,ONLY:zero
+      REAL(rk), INTENT(inout) :: Hess(:,:)
+      INTEGER(ik),INTENT(in)::k
+      !---
+      REAL(rk)::diagK
+      diagK=Hess(k,k)
+      Hess(k,:)=zero; Hess(:,k)=zero
+      Hess(k,k)=diagK
+   END SUBROUTINE updateHess
 
 
 END SUBROUTINE rgn

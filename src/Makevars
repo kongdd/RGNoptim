@@ -32,11 +32,20 @@ PKG_CFLAGS = $(SHLIB_OPENMP_CFLAGS)
 all:
 	# echo @$(MAKE) $(SHLIB)
 	@$(MAKE) $(SHLIB)
-	@rm -f *.mod *.o 
+	# @rm -f *.mod *.o 
 	#*.dll *.so
 
-$(SHLIB): $(OBJS) 
+$(SHLIB): constantsMod.o rgn.o Rosenbrock.o objFunc.o init.o
+# $(OBJS) 
 # ${C_OBJS}
+
+init.o: init.c Rosenbrock.o
+
+Rosenbrock.o: Rosenbrock.f90 rgn.o constantsMod.o
+
+rgn.o: rgn.f90 constantsMod.o
+
+constantsMod.o: constantsMod.f90
 
 # init.o
 # init.o: mo_drought_evaluation.o
@@ -56,7 +65,7 @@ $(SHLIB): $(OBJS)
 
 .PHONY: clean
 clean:
-	@rm -f *.mod *.o *.dll
+	@rm -f *.mod *.o *.dll *.mod
 
 ## Conclusion
 #  1. netcdf-fortran not work in windows
