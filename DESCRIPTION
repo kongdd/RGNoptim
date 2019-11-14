@@ -16,3 +16,5 @@ LinkingTo:
     Rcpp
 Imports: 
     Rcpp
+URL: https://github.com/kongdd/RGNoptim
+BugReports: https://github.com/kongdd/RGNoptim/issues
