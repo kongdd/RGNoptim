@@ -35,13 +35,13 @@ all:
 	# @rm -f *.mod *.o 
 	#*.dll *.so
 
-$(SHLIB): constantsMod.o rgn.o Rosenbrock.o objFunc.o init.o
+$(SHLIB): constantsMod.o rgn.o RGNoptim.o objFunc.o init.o
 # $(OBJS) 
 # ${C_OBJS}
 
-init.o: init.c Rosenbrock.o
+init.o: init.c RGNoptim.o
 
-Rosenbrock.o: Rosenbrock.f90 rgn.o constantsMod.o
+RGNoptim.o: RGNoptim.f90 rgn.o constantsMod.o
 
 rgn.o: rgn.f90 constantsMod.o
 

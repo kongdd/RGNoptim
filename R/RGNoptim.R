@@ -28,13 +28,13 @@ RGNoptim2 <- function(x = c(0, 0), objective, residual, lower = NULL, upper = NU
     x0 = x
 
     .Call("init_param", obj, obj_multi, rho)
-    browser()
-
+    # browser()
+    print("debug")
     r <- .Fortran("RGNoptim",
         nPar, nSim,
         x0, as.double(lower), as.double(upper),
         x, as.double(f), as.double(r),
-        timeFunc, convcode)
+        timeFunc, convcode, NAOK = TRUE)
     r
 }
 # tools::package_native_routine_registration_skeleton(".")

@@ -216,7 +216,8 @@ SUBROUTINE rgn (objFunc, p, n, x0, xLo, xHi, cnv, x, info, error, message, decFi
       info%termFlag = 0; info%nEval = 0
       CALL CPU_TIME (time(1))
       x = x0
-      CALL objFunc (nPar=p, nSim=n, x=x, r=rBest, f=f, timeFunc=time4fcall, error=error, message=message); info%nEval = info%nEval + 1; IF (error /=0) GO TO 1
+      CALL objFunc (nPar=p, nSim=n, x=x, r=rBest, f=f, timeFunc=time4fcall, error=error, message=message)
+      info%nEval = info%nEval + 1; IF (error /=0) GO TO 1
       fBest = f; xBest = x
       time4fcallAcc=time4fcallAcc+time4fcall  
       !CALL userRunTimeMessage ('Starting RGN', -1)

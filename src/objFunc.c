@@ -1,6 +1,7 @@
 #include <R.h>
 #include <Rinternals.h>
 #include <time.h>
+#include <stdio.h>
 
 // #include <stdlib.h> // for NULL
 // #include <R_ext/BLAS.h>
@@ -20,9 +21,14 @@ extern void objfunc_(int nPar, int nSim, double * x, double * r, double f,
     clock_t start, end;
     start = clock();
 
+    SEXP dot_par_symbol = install(".par");
+    SEXP xpt = findVarInFrame(rho, dot_par_symbol);
+    defineVar(dot_par_symbol, duplicate(xpt), rho);
+
     f = asReal(eval(obj      , rho));
     r = (double *)(eval(obj_multi, rho));
-            
+    
+    // printf("debug\n");
     end = clock();
     timeFunc = ((double) (end - start)) / CLOCKS_PER_SEC;
 }
